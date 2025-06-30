@@ -14,10 +14,12 @@ const pieOptions = {
         }
     }
 };
+
 async function generateNRMISReport(data) {
     const tempDiv = document.createElement('div');
-    tempDiv.style.width = '595pt'; // A4 width in points
+    tempDiv.style.width = '595pt'; // A4 width
     tempDiv.style.padding = '20pt';
+    tempDiv.style.background = '#fff'; // ensure clean white background
     tempDiv.innerHTML = generateReportHTML(data);
     document.body.appendChild(tempDiv);
 
@@ -25,70 +27,46 @@ async function generateNRMISReport(data) {
     createCharts(data.chartData);
 
     // Wait for charts to render
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000)); // render delay for charts
 
-    // PDF configuration options
-    const options = {
-        margin: [10, 10, 10, 10],
-        filename: "NR-Portfolio-Report.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-            scale: 2,
-            logging: false,
+    // Initialize jsPDF
+    const pdf = new jsPDF({
+        unit: "pt",
+        format: "a4",
+        orientation: "portrait",
+        compress: true,
+        precision: 16,
+        putOnlyUsedFonts: true
+    });
+
+    // Select all .page blocks
+    const pages = tempDiv.querySelectorAll('.page');
+
+    for (let i = 0; i < pages.length; i++) {
+        const canvas = await html2canvas(pages[i], {
+            scale: 1.5,
             useCORS: true,
             allowTaint: true,
             scrollY: 0,
+            logging: false,
             windowWidth: document.body.scrollWidth
-        },
-        jsPDF: {
-            unit: "pt", // Changed from "mm" to "pt" to match your original
-            format: "a4",
-            orientation: "portrait",
-            compress: true,
-            precision: 16,
-            putOnlyUsedFonts: true
-        },
-        pagebreak: {
-            mode: ['avoid-all', 'css', 'legacy'],
-            before: '.page-break-before',
-            after: '.page-break-after',
-            avoid: '.no-break'
-        }
-    };
+        });
 
-    // Generate PDF with html2canvas and jsPDF
-    const pdf = new jsPDF(options.jsPDF);
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+        const imgWidth = 595.28; // A4 width in pt
+        const pageHeight = 841.89; // A4 height in pt
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    await html2canvas(tempDiv, {
-        scale: options.html2canvas.scale,
-        logging: options.html2canvas.logging,
-        useCORS: options.html2canvas.useCORS,
-        allowTaint: options.html2canvas.allowTaint,
-        scrollY: options.html2canvas.scrollY,
-        windowWidth: options.html2canvas.windowWidth
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/jpeg', options.image.quality);
-        const imgWidth = options.jsPDF.format === 'a4' ? 595 : 841.89; // A4 width in pt
-        const pageHeight = options.jsPDF.format === 'a4' ? 842 : 595; // A4 height in pt
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+    }
 
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        pdf.save(options.filename);
-        document.getElementById('loading-message').style.display = 'none';
-        document.body.removeChild(tempDiv);
-    });
+    // Save PDF and cleanup
+    pdf.save("NR-Portfolio-Report.pdf");
+    document.getElementById('blank').style.display = 'none';
+    document.body.removeChild(tempDiv);
 }
+
 function createCharts(chartData) {
     // Reporting vs Not Reporting Pie Chart
     createPieChart('chart1', {
@@ -121,6 +99,7 @@ function createCharts(chartData) {
         }]
     }, {
         responsive: true,
+          maintainAspectRatio: false, 
         layout: { padding: 30 },
         plugins: {
             legend: { display: false },
@@ -215,24 +194,21 @@ function generateReportHTML(data) {
 
         /* Header */
         header,
-        .pdf-header-clone {
+        .pdf-header-clone  {
             top: 0;
             width: 100%;
             background-color: white;
             text-align: center;
-            margin-top: 0.3rem;
             z-index: 1000;
             border-top: 1.5px solid #4472c4;
             border-bottom: 1.5px solid #4472c4;
             margin-bottom: 12px;
             background-color: white;
         }
-
-        .pdf-header-clone {
-            margin-top: 1.5rem;
-    
+        
+        header{
+        margin-top:0.3rem;
         }
-
         #content {
             width: 100%;
             box-sizing: border-box;
@@ -346,16 +322,16 @@ function generateReportHTML(data) {
 
         /* Pie chart below */
         #charts {
-            width: 90%;
-            max-width: 300px;
-            margin: 16px auto;
-            text-align: center;
-            margin-bottom: 2px;
+           width: 70%;
+           max-width: 250px;
+           margin: 10px auto;
+           text-align: center;
+           margin-bottom: 2px;
         }
 
         #nrPortfolioChart {
-           width: 350px !important;
-           height: 350px !important;
+           width: 250px !important;
+           height: 250px !important;
            margin: auto;
         }
 
@@ -430,6 +406,7 @@ function generateReportHTML(data) {
         #NR-Portfolio-30-Days-Earlier {
             table-layout: fixed;
             width: 100%;
+            margin-top:2.5rem;
         }
 
         #NR-Portfolio-Today th:nth-child(1),
@@ -457,6 +434,8 @@ function generateReportHTML(data) {
         .full-width-table {
             width: 90%;
             margin: 10px auto;
+            margin-top:2.5rem;
+            margin-bottom:8rem;
             text-align: left;
             padding: 5px;
             table-layout: fixed;
@@ -507,9 +486,10 @@ function generateReportHTML(data) {
         }
 
         .page {
-  width: 100%;
-  page-break-inside: avoid;
-  break-inside: avoid;
+           width: 100%;
+           page-break-inside: avoid;
+           break-inside: avoid;
+           padding-top: 1rem; 
 }
 
 .page-break {
@@ -526,7 +506,9 @@ function generateReportHTML(data) {
         }
 
         .pdf-header-clone {
-            display: fixed;
+            display: block;
+            // margin-top: 0.3rem;
+
         }
 
         .generate-pdf .pdf-header-clone {
@@ -535,7 +517,6 @@ function generateReportHTML(data) {
             text-align: center;
             padding: 8px;
             margin-bottom: 2px;
-            margin-top: 15px;
         }
     </style>
     <div id="content">
@@ -600,13 +581,13 @@ function generateReportHTML(data) {
 
         <div class="page-break"></div>
 
-               <div class="pdf-header-clone">
+        <!-- Page 2 -->
+        <div class="page second-page">
+        <div class="pdf-header-clone">
                 <h2>NOT REPORTING PORTFOLIO MIS</h2>
                 <p>Client Name: JS Bank Limited</p>
                 <p>Issue Date: 12 Dec, 2018</p>
             </div>
-        <!-- Page 2 -->
-        <div class="page second-page">
             <div class="col-group">
                 <div class="col left-col">
                     <table id="Monthly-Comparative-Analysis">
@@ -712,13 +693,10 @@ function generateReportHTML(data) {
                 </table>
             </div>
         </div>
-
-         <div class="page-break"></div>
-           ${generateEntriesPages(data.entries)}
-</div>
-
-    `;
+       ${generateEntriesPages(data.entries)}
+</div>`;
 }
+
 
 function generateEntriesPages(entries) {
     const groups = [
@@ -738,49 +716,24 @@ function generateEntriesPages(entries) {
         startIndex += group.count;
 
         pagesHTML += `
-        ${i > 0 ? '<div class="page-break"></div>' : ''}
+        <style>
+        .pdf-header-clone{
+        top: 0;
+            width: 100%;
+            background-color: white;
+            text-align: center;
+            margin-top: 3rem;
+            z-index: 1000;
+            border-top: 1.5px solid #4472c4;
+            border-bottom: 1.5px solid #4472c4;
+            margin-bottom: 12px;
+            background-color: white;
+        }
+        </style>
+        <div class="page-break"></div>
         <div class="page no-break">
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 0;
-                    padding: 0;
-                }
-                .pdf-header-clone {
-                    width: 100%;
-                    background-color: white;
-                    text-align: center;
-                    margin-top: 2.5rem;
-                    border-top: 1.5px solid #4472c4;
-                    border-bottom: 1.5px solid #4472c4;
-                    margin-bottom: 12px;
-                }
-                .display {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                .display thead {
-                    background-color: #086bc2;
-                    color: white;
-                }
-                .display th,
-                .display td {
-                    border: 1px solid #ccc;
-                    padding: 8px;
-                    text-align: center;
-                    font-size: 12px;
-                }
-                .table-container {
-                    padding: 0 1rem;
-                }
-                .page-break {
-                    page-break-before: always;
-                }
-            </style>
-
             <div class="pdf-header-clone">
-                <h2>NOT REPORTING PORTFOLIO MIS</h2>
+                <h2>${group.title}</h2>
                 <p>Client Name: JS Bank Limited</p>
                 <p>Issue Date: 12 Dec, 2018</p>
             </div>
@@ -814,12 +767,11 @@ function generateEntriesPages(entries) {
                                 <td>${entry.aging}</td>
                             </tr>
                         `).join('')}
-                     <div class="page-break"></div>
                     </tbody>
                 </table>
             </div>
         </div>
-        `;
+    <div class="page-break"></div>`;
     });
 
     return pagesHTML;
