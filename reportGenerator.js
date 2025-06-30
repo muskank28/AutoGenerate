@@ -1,19 +1,19 @@
 const { jsPDF } = window.jspdf;
 
 // Chart configuration
- const pieOptions = {
+const pieOptions = {
     plugins: {
-      datalabels: {
-        formatter: (value, context) => {
-          const data = context.chart.data.datasets[0].data;
-          const total = data.reduce((sum, val) => sum + val, 0);
-          return ((value / total) * 100).toFixed(1) + '%';
-        },
-        color: '#fff',
-        font: { weight: 'bold' }
-      }
+        datalabels: {
+            formatter: (value, context) => {
+                const data = context.chart.data.datasets[0].data;
+                const total = data.reduce((sum, val) => sum + val, 0);
+                return ((value / total) * 100).toFixed(1) + '%';
+            },
+            color: '#fff',
+            font: { weight: 'bold' }
+        }
     }
-  };
+};
 async function generateNRMISReport(data) {
     const tempDiv = document.createElement('div');
     tempDiv.style.width = '595pt'; // A4 width in points
@@ -58,7 +58,7 @@ async function generateNRMISReport(data) {
 
     // Generate PDF with html2canvas and jsPDF
     const pdf = new jsPDF(options.jsPDF);
-    
+
     await html2canvas(tempDiv, {
         scale: options.html2canvas.scale,
         logging: options.html2canvas.logging,
@@ -230,6 +230,7 @@ function generateReportHTML(data) {
 
         .pdf-header-clone {
             margin-top: 1.5rem;
+    
         }
 
         #content {
@@ -345,11 +346,17 @@ function generateReportHTML(data) {
 
         /* Pie chart below */
         #charts {
-            width: 70%;
-            max-width: 250px;
-            margin: 10px auto;
+            width: 90%;
+            max-width: 300px;
+            margin: 16px auto;
             text-align: center;
             margin-bottom: 2px;
+        }
+
+        #nrPortfolioChart {
+           width: 350px !important;
+           height: 350px !important;
+           margin: auto;
         }
 
         /* Second Page */
@@ -519,7 +526,7 @@ function generateReportHTML(data) {
         }
 
         .pdf-header-clone {
-            display: none;
+            display: fixed;
         }
 
         .generate-pdf .pdf-header-clone {
@@ -528,6 +535,7 @@ function generateReportHTML(data) {
             text-align: center;
             padding: 8px;
             margin-bottom: 2px;
+            margin-top: 15px;
         }
     </style>
     <div id="content">
@@ -535,8 +543,8 @@ function generateReportHTML(data) {
         <div class="page">
             <header class="print-header">
                 <h2>NOT REPORTING PORTFOLIO MIS</h2>
-                <p>Client Name: ${data.clientName}</p>
-                <p>Issue Date: ${data.issueDate}</p>
+                <p>Client Name: JS Bank Limited </p>
+                <p>Issue Date: 12 Dec, 2018 </p>
             </header>
 
             <div class="sum-type">
@@ -592,13 +600,11 @@ function generateReportHTML(data) {
 
         <div class="page-break"></div>
 
-        <!-- Page Break -->
-        <div class="pdf-header-clone">
-            <h2>NOT REPORTING PORTFOLIO MIS</h2>
-            <p>Client Name: ${data.clientName}</p>
-            <p>Issue Date: ${data.issueDate}</p>
-        </div>
-
+               <div class="pdf-header-clone">
+                <h2>NOT REPORTING PORTFOLIO MIS</h2>
+                <p>Client Name: JS Bank Limited</p>
+                <p>Issue Date: 12 Dec, 2018</p>
+            </div>
         <!-- Page 2 -->
         <div class="page second-page">
             <div class="col-group">
@@ -707,133 +713,118 @@ function generateReportHTML(data) {
             </div>
         </div>
 
-        <!-- Pages 3+ with entries -->
-        ${generateEntriesPages(data.entries)}
-    </div>
+         <div class="page-break"></div>
+           ${generateEntriesPages(data.entries)}
+</div>
+
     `;
 }
 
 function generateEntriesPages(entries) {
-    const itemsPerPage = 30;
-    let pagesHTML = '';
-    const nrTypes = [
-        "NO CONTACT / NON-COOPERATIVE",
-        "LOW GSM/NON GSM AREA",
-        "PARKED FOR PROLONGED PERIOD",
-        "SCHEDULED FOR REDO",
-        "TOTAL LOSS / UNDER REPAIR",
-        "THIRD PARTY SOLD"
+    const groups = [
+        { count: 30, title: "NOT REPORTING PORTFOLIO MIS" },
+        { count: 2, title: "NOT REPORTING PORTFOLIO MIS" },
+        { count: 28, title: "NOT REPORTING PORTFOLIO MIS" },
+        { count: 40, title: "NOT REPORTING PORTFOLIO MIS" },
+        { count: 7, title: "NOT REPORTING PORTFOLIO MIS" },
+        { count: 1, title: "NOT REPORTING PORTFOLIO MIS" }
     ];
 
-    // Create a page for each NR type
-    nrTypes.forEach((type, index) => {
-        const filteredEntries = entries.filter(entry => entry.type === type);
-        const pageCount = Math.ceil(filteredEntries.length / itemsPerPage);
+    let startIndex = 0;
+    let pagesHTML = "";
 
-        for (let i = 0; i < pageCount; i++) {
-            const pageEntries = filteredEntries.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+    groups.forEach((group, i) => {
+        const groupEntries = entries.slice(startIndex, startIndex + group.count);
+        startIndex += group.count;
 
-            pagesHTML += `
-            <div class="page-break"></div>
+        pagesHTML += `
+        ${i > 0 ? '<div class="page-break"></div>' : ''}
+        <div class="page no-break">
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                }
+                .pdf-header-clone {
+                    width: 100%;
+                    background-color: white;
+                    text-align: center;
+                    margin-top: 2.5rem;
+                    border-top: 1.5px solid #4472c4;
+                    border-bottom: 1.5px solid #4472c4;
+                    margin-bottom: 12px;
+                }
+                .display {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                .display thead {
+                    background-color: #086bc2;
+                    color: white;
+                }
+                .display th,
+                .display td {
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    text-align: center;
+                    font-size: 12px;
+                }
+                .table-container {
+                    padding: 0 1rem;
+                }
+                .page-break {
+                    page-break-before: always;
+                }
+            </style>
+
             <div class="pdf-header-clone">
                 <h2>NOT REPORTING PORTFOLIO MIS</h2>
                 <p>Client Name: JS Bank Limited</p>
                 <p>Issue Date: 12 Dec, 2018</p>
             </div>
-            
-            <div class="page no-break">
-                <div class="table-container">
-                    <button>Home Page</button>
-                    <table class="display" id="table${index + 1}">
-                        <thead>
+
+            <div class="table-container">
+                <table class="display">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Reg No.</th>
+                            <th>Primary Name</th>
+                            <th>Make</th>
+                            <th>Engine No</th>
+                            <th>Ch No.</th>
+                            <th>Model</th>
+                            <th>NR Date</th>
+                            <th>Aging</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${groupEntries.map((entry, idx) => `
                             <tr>
-                                <th>S.No</th>
-                                <th>Reg No.</th>
-                                <th>Primary Name</th>
-                                <th>Make</th>
-                                <th>Engine No</th>
-                                <th>Ch No.</th>
-                                <th>Model</th>
-                                <th>NR Date</th>
-                                <th>Aging</th>
+                                <td>${idx + 1}</td>
+                                <td>${entry.reg}</td>
+                                <td>${entry.name}</td>
+                                <td>${entry.make}</td>
+                                <td>${entry.engine}</td>
+                                <td>${entry.chassis}</td>
+                                <td>${entry.model}</td>
+                                <td>${entry.nrDate}</td>
+                                <td>${entry.aging}</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${pageEntries.map((entry, idx) => `
-                                <tr>
-                                    <td>${idx + 1}</td>
-                                    <td>${entry.reg}</td>
-                                    <td>${entry.name}</td>
-                                    <td>${entry.make}</td>
-                                    <td>${entry.engine}</td>
-                                    <td>${entry.chassis}</td>
-                                    <td>${entry.model}</td>
-                                    <td>${entry.nrDate}</td>
-                                    <td>${entry.aging}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                        `).join('')}
+                     <div class="page-break"></div>
+                    </tbody>
+                </table>
             </div>
-            `;
-        }
+        </div>
+        `;
     });
 
     return pagesHTML;
 }
 
-function generateEntriesPages(entries) {
-    const itemsPerPage = 30;
-    let pagesHTML = '';
-
-    for (let i = 0; i < entries.length; i += itemsPerPage) {
-        const pageEntries = entries.slice(i, i + itemsPerPage);
-
-        pagesHTML += `
-        <div class="header">
-            <h1>NOT REPORTING PORTFOLIO MIS</h1>
-            <p>Client Name: JS Bank Limited</p>
-            <p>Issue Date: 12 Dec, 2018</p>
-        </div>
-
-        <h3 style="text-align: center; margin-bottom: 10px;">Home Page</h3>
-        <table class="entries-table">
-            <thead>
-                <tr>
-                    <th>S.No</th>
-                    <th>Reg No.</th>
-                    <th>Primary Name</th>
-                    <th>Make</th>
-                    <th>Engine No</th>
-                    <th>Ch No.</th>
-                    <th>Model</th>
-                    <th>NR Date</th>
-                    <th>Aging</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${pageEntries.map(entry => `
-                    <tr>
-                        <td>${entry.sno}</td>
-                        <td>${entry.reg}</td>
-                        <td>${entry.name}</td>
-                        <td>${entry.make}</td>
-                        <td>${entry.engine}</td>
-                        <td>${entry.chassis}</td>
-                        <td>${entry.model}</td>
-                        <td>${entry.nrDate}</td>
-                        <td>${entry.aging}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-        ${i + itemsPerPage < entries.length ? '<div class="page-break"></div>' : ''}
-        `;
-    }
-
-    return pagesHTML;
-}
 
 // Automatically generate the report when the page loads
 window.addEventListener('DOMContentLoaded', () => {
