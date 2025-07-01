@@ -732,12 +732,6 @@ function generateEntriesPages(entries) {
         </style>
         <div class="page-break"></div>
         <div class="page no-break">
-            <div class="pdf-header-clone">
-                <h2>${group.title}</h2>
-                <p>Client Name: JS Bank Limited</p>
-                <p>Issue Date: 12 Dec, 2018</p>
-            </div>
-
             <div class="table-container">
                 <table class="display">
                     <thead>
