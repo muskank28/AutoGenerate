@@ -99,7 +99,7 @@ function createCharts(chartData) {
         }]
     }, {
         responsive: true,
-          maintainAspectRatio: false, 
+        maintainAspectRatio: false,
         layout: { padding: 30 },
         plugins: {
             legend: { display: false },
@@ -205,7 +205,21 @@ function generateReportHTML(data) {
             margin-bottom: 12px;
             background-color: white;
         }
-        
+.pdf-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-text {
+  text-align: left;
+}
+
+.header-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
         header{
         margin-top:0.3rem;
         }
@@ -518,15 +532,50 @@ function generateReportHTML(data) {
             padding: 8px;
             margin-bottom: 2px;
         }
+            .pdf-header-clone {
+  top: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 1000;
+  border-top: 1.5px solid #4472c4;
+  border-bottom: 1.5px solid #4472c4;
+  margin: 3rem 0 12px;
+  padding: 10px;
+}
+
+.pdf-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-text {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.header-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-left: auto;
+  padding-right: 30px;
+}
+
     </style>
     <div id="content">
         <!-- Page 1 -->
         <div class="page">
-            <header class="print-header">
-                <h2>NOT REPORTING PORTFOLIO MIS</h2>
-                <p>Client Name: JS Bank Limited </p>
-                <p>Issue Date: 12 Dec, 2018 </p>
-            </header>
+            <div class="pdf-header-clone">
+  <div class="pdf-header-content">
+    <div class="header-text">
+      <h2>NOT REPORTING PORTFOLIO MIS</h2>
+      <p>Client Name: JS Bank Limited</p>
+      <p>Issue Date: 12 Dec, 2018</p>
+    </div>
+    <img src="itecknology-New-Logo.png.webp" class="header-logo" alt="Logo" />
+  </div>
+</div>
 
             <div class="sum-type">
                 <div class="left-tables">
@@ -584,11 +633,16 @@ function generateReportHTML(data) {
         <!-- Page 2 -->
         <div class="page second-page">
         <div class="pdf-header-clone">
-                <h2>NOT REPORTING PORTFOLIO MIS</h2>
-                <p>Client Name: JS Bank Limited</p>
-                <p>Issue Date: 12 Dec, 2018</p>
-            </div>
-            <div class="col-group">
+  <div class="pdf-header-content">
+    <div class="header-text">
+      <h2>NOT REPORTING PORTFOLIO MIS</h2>
+      <p>Client Name: JS Bank Limited</p>
+      <p>Issue Date: 12 Dec, 2018</p>
+    </div>
+    <img src="itecknology-New-Logo.png.webp" class="header-logo" alt="Logo" />
+  </div>
+</div>
+    <div class="col-group">
                 <div class="col left-col">
                     <table id="Monthly-Comparative-Analysis">
                         <thead>
@@ -717,22 +771,49 @@ function generateEntriesPages(entries) {
 
         pagesHTML += `
         <style>
-        .pdf-header-clone{
-        top: 0;
-            width: 100%;
-            background-color: white;
-            text-align: center;
-            margin-top: 3rem;
-            z-index: 1000;
-            border-top: 1.5px solid #4472c4;
-            border-bottom: 1.5px solid #4472c4;
-            margin-bottom: 12px;
-            background-color: white;
-        }
+        .pdf-header-clone {
+  top: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 1000;
+  border-top: 1.5px solid #4472c4;
+  border-bottom: 1.5px solid #4472c4;
+  margin: 3rem 0 12px;
+  padding: 10px;
+}
+
+.pdf-header-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.header-text {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.header-logo {
+  height: 50px;
+  width: auto;
+  padding-right:30px;
+  object-fit: contain;
+  margin-left: auto; /* Push to the far right */
+}
         </style>
         <div class="page-break"></div>
         <div class="page no-break">
-            <div class="table-container">
+         <div class="pdf-header-clone">
+  <div class="pdf-header-content">
+    <div class="header-text">
+      <h2>NOT REPORTING PORTFOLIO MIS</h2>
+      <p>Client Name: JS Bank Limited</p>
+      <p>Issue Date: 12 Dec, 2018</p>
+    </div>
+    <img src="itecknology-New-Logo.png.webp" class="header-logo" alt="Logo" />
+  </div>
+</div>
+   <div class="table-container">
                 <table class="display">
                     <thead>
                         <tr>
