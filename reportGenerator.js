@@ -215,14 +215,17 @@ function generateReportHTML(data) {
   text-align: left;
 }
 
+.header-text h2,
+.header-text p {
+  margin: 0;
+  padding: 0;
+}
+
 .header-logo {
   height: 50px;
   width: auto;
   object-fit: contain;
 }
-        header{
-        margin-top:0.3rem;
-        }
         #content {
             width: 100%;
             box-sizing: border-box;
@@ -539,8 +542,8 @@ function generateReportHTML(data) {
   z-index: 1000;
   border-top: 1.5px solid #4472c4;
   border-bottom: 1.5px solid #4472c4;
-  margin: 3rem 0 12px;
-  padding: 10px;
+  margin: 0.3rem 0 12px;
+  padding: 6px;
 }
 
 .pdf-header-content {
@@ -552,10 +555,17 @@ function generateReportHTML(data) {
 .header-text {
   flex-grow: 1;
   text-align: center;
+  padding:0;
+}
+
+.header-text h2,
+.header-text p {
+  margin: 0;
+  padding: 0;
 }
 
 .header-logo {
-  height: 50px;
+  height: 80px;
   width: auto;
   object-fit: contain;
   margin-left: auto;
@@ -778,7 +788,7 @@ function generateEntriesPages(entries) {
   z-index: 1000;
   border-top: 1.5px solid #4472c4;
   border-bottom: 1.5px solid #4472c4;
-  margin: 3rem 0 12px;
+  margin: 0.3rem 0 12px;
   padding: 10px;
 }
 
@@ -794,7 +804,7 @@ function generateEntriesPages(entries) {
 }
 
 .header-logo {
-  height: 50px;
+  height: 80px;
   width: auto;
   padding-right:30px;
   object-fit: contain;
