@@ -44,7 +44,7 @@ async function generateNRMISReport(data) {
 
     for (let i = 0; i < pages.length; i++) {
         const canvas = await html2canvas(pages[i], {
-            scale: 1.5,
+            scale: 5,
             useCORS: true,
             allowTaint: true,
             scrollY: 0,
@@ -74,9 +74,19 @@ function createCharts(chartData) {
         datasets: [{
             data: chartData.reportingPie.data,
             backgroundColor: chartData.reportingPie.colors,
-            borderWidth: 0
+            borderColor: '#fff',
+            borderWidth: 2
         }]
-    });
+    },
+        {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                datalabels: pieOptions.plugins.datalabels
+            }
+        });
 
     // IT Issues Pie Chart
     createPieChart('chart2', {
@@ -84,9 +94,19 @@ function createCharts(chartData) {
         datasets: [{
             data: chartData.itPie.data,
             backgroundColor: chartData.itPie.colors,
-            borderWidth: 0
+            borderColor: '#fff',
+            borderWidth: 2
         }]
-    });
+    },
+        {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                datalabels: pieOptions.plugins.datalabels
+            }
+        });
 
     // NR Portfolio Pie Chart
     createPieChart('nrPortfolioChart', {
@@ -100,16 +120,28 @@ function createCharts(chartData) {
     }, {
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: 30 },
+        layout: { padding: 20 },
         plugins: {
-            legend: { display: false },
+            legend: {
+                display: true,
+                position: 'right', // ➡️ Legend on right
+                labels: {
+                    boxWidth: 20,
+                    padding: 8,
+                    font: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    color: '#333'
+                }
+            },
             datalabels: {
                 formatter: (value, context) => {
                     const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                     return ((value / total) * 100).toFixed(1) + '%';
                 },
                 color: '#000',
-                font: { size: 12, weight: 'bold' },
+                font: { size: 14, weight: 'bold' },
                 anchor: 'end',
                 align: 'start',
                 offset: -28,
@@ -299,6 +331,7 @@ function generateReportHTML(data) {
             flex: 1;
             max-width: 800px;
             margin-left: 5px;
+            margin-top:2rem;
         }
 
         #summary table {
@@ -324,7 +357,7 @@ function generateReportHTML(data) {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .chart-block {
@@ -332,24 +365,24 @@ function generateReportHTML(data) {
         }
 
         .chart-block canvas {
-            max-width: 200px;
-            max-height: 200px;
+            max-width: 225px;
+            max-height: 225px;
             margin: auto;
         }
 
         /* Pie chart below */
         #charts {
-           width: 70%;
-           max-width: 250px;
+           width: 90%;
            margin: 10px auto;
            text-align: center;
            margin-bottom: 2px;
         }
 
         #nrPortfolioChart {
-           width: 250px !important;
-           height: 250px !important;
-           margin: auto;
+           width: 80%;
+           height: 290px !important;
+           margin-bottom:4px;
+           top:0;
         }
 
         /* Second Page */
@@ -475,9 +508,13 @@ function generateReportHTML(data) {
             text-align: center;
         }
 
+        .table-container{
+        padding: 0 10px;
+        }
         .display th, td {
             font-size: 12px;
             border: 0.5px solid #ffffff;
+            padding: 2px 0;
         }
 
         .display table {
