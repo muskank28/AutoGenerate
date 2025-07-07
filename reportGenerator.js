@@ -9,7 +9,7 @@ const pieOptions = {
                 const total = data.reduce((sum, val) => sum + val, 0);
                 return ((value / total) * 100).toFixed(1) + '%';
             },
-            color: '#fff',
+            color: '#000',
             font: { weight: 'bold' }
         }
     }
@@ -34,9 +34,10 @@ async function generateNRMISReport(data) {
         unit: "pt",
         format: "a4",
         orientation: "portrait",
-        compress: true,
+        compress: false,
         precision: 16,
-        putOnlyUsedFonts: true
+        putOnlyUsedFonts: true,
+        filters: ["ASCIIHexEncode"]
     });
 
     // Select all .page blocks
@@ -44,21 +45,23 @@ async function generateNRMISReport(data) {
 
     for (let i = 0; i < pages.length; i++) {
         const canvas = await html2canvas(pages[i], {
-            scale: 5,
+            scale: 4,
             useCORS: true,
             allowTaint: true,
             scrollY: 0,
             logging: false,
-            windowWidth: document.body.scrollWidth
+            windowWidth: document.body.scrollWidth,
+            letterRendering: true, // Better text rendering
+            dpi: 300, // Higher DPI for better quality
         });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+        const imgData = canvas.toDataURL('image/png', 1.0);
         const imgWidth = 595.28; // A4 width in pt
         const pageHeight = 841.89; // A4 height in pt
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
     }
 
     // Save PDF and cleanup
@@ -68,7 +71,7 @@ async function generateNRMISReport(data) {
 }
 
 function createCharts(chartData) {
-    // Reporting vs Not Reporting Pie Chart
+    // Chart 1: Reporting vs Not Reporting
     createPieChart('chart1', {
         labels: chartData.reportingPie.labels,
         datasets: [{
@@ -77,18 +80,48 @@ function createCharts(chartData) {
             borderColor: '#fff',
             borderWidth: 2
         }]
-    },
-        {
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
+    }, {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 3 },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    boxWidth: 20,
+                    padding: 6,
+                    margin: 1,
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    },
+                    color: '#333'
+                }
+            },
+            datalabels: {
+                formatter: (value, context) => {
+                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    return ((value / total) * 100).toFixed(1) + '%';
                 },
-                datalabels: pieOptions.plugins.datalabels
+                color: '#fff',
+                font: { size: 14, weight: 'bold' },
+                anchor: 'end',
+                align: 'start',
+                offset: -1,
+                backgroundColor: 'transparent',
+                callout: {
+                    display: true,
+                    borderColor: '#999',
+                    borderWidth: 1,
+                    side: 'bottom',
+                    length: 15
+                }
             }
-        });
+        }
+    });
 
-    // IT Issues Pie Chart
+    // Chart 2: IT Issues
     createPieChart('chart2', {
         labels: chartData.itPie.labels,
         datasets: [{
@@ -97,18 +130,47 @@ function createCharts(chartData) {
             borderColor: '#fff',
             borderWidth: 2
         }]
-    },
-        {
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
+    }, {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: 3 },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    boxWidth: 20,
+                    padding: 6,
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    },
+                    color: '#333'
+                }
+            },
+            datalabels: {
+                formatter: (value, context) => {
+                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    return ((value / total) * 100).toFixed(1) + '%';
                 },
-                datalabels: pieOptions.plugins.datalabels
+                color: '#fff',
+                font: { size: 14, weight: 'bold' },
+                anchor: 'end',
+                align: 'start',
+                offset: -1,
+                backgroundColor: 'transparent',
+                callout: {
+                    display: true,
+                    borderColor: '#999',
+                    borderWidth: 1,
+                    side: 'bottom',
+                    length: 15
+                }
             }
-        });
+        }
+    });
 
-    // NR Portfolio Pie Chart
+    // Chart 3: NR Portfolio
     createPieChart('nrPortfolioChart', {
         labels: chartData.portfolioPie.labels,
         datasets: [{
@@ -120,14 +182,14 @@ function createCharts(chartData) {
     }, {
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: 20 },
+        layout: { padding: 30 },
         plugins: {
             legend: {
                 display: true,
-                position: 'right', // ➡️ Legend on right
+                position: 'right',
                 labels: {
                     boxWidth: 20,
-                    padding: 8,
+                    padding: 6,
                     font: {
                         size: 14,
                         weight: 'bold'
@@ -141,7 +203,7 @@ function createCharts(chartData) {
                     return ((value / total) * 100).toFixed(1) + '%';
                 },
                 color: '#000',
-                font: { size: 14, weight: 'bold' },
+                font: { size: 16, weight: 'bold' },
                 anchor: 'end',
                 align: 'start',
                 offset: -28,
@@ -175,11 +237,24 @@ function createCharts(chartData) {
     });
 }
 
+
 function createPieChart(id, data, customOptions = {}) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
 
-    const options = { ...pieOptions, ...customOptions };
+    // Set higher DPI for the canvas
+    const dpi = window.devicePixelRatio * 2;
+    ctx.style.width = ctx.offsetWidth + 'px';
+    ctx.style.height = ctx.offsetHeight + 'px';
+    ctx.width = ctx.offsetWidth * dpi;
+    ctx.height = ctx.offsetHeight * dpi;
+
+    const options = {
+        ...pieOptions,
+        ...customOptions,
+        devicePixelRatio: dpi 
+    };
+
     new Chart(ctx, {
         type: 'pie',
         data: data,
@@ -188,9 +263,17 @@ function createPieChart(id, data, customOptions = {}) {
     });
 }
 
+
 function createBarChart(id, data) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
+
+    // Set higher DPI for the canvas
+    const dpi = window.devicePixelRatio * 2;
+    ctx.style.width = ctx.offsetWidth + 'px';
+    ctx.style.height = ctx.offsetHeight + 'px';
+    ctx.width = ctx.offsetWidth * dpi;
+    ctx.height = ctx.offsetHeight * dpi;
 
     new Chart(ctx, {
         type: 'bar',
@@ -198,22 +281,42 @@ function createBarChart(id, data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            devicePixelRatio: dpi,
             plugins: {
                 legend: { position: 'bottom' },
-                title: { display: true, text: 'NR Monthly Comparative Analysis' },
+                title: {
+                    display: true,
+                    text: 'NR Monthly Comparative Analysis',
+                    font: {
+                        size: 10 * dpi
+                    }
+                },
                 datalabels: {
                     anchor: 'end',
                     align: 'start',
                     offset: -22,
                     color: '#44546a',
-                    font: { size: 10, weight: 'bold' }
+                    font: {
+                        size: 6 * dpi,
+                        weight: 'bold'
+                    }
                 }
             },
-            scales: { y: { beginAtZero: true } }
+            scales: {
+                y: { beginAtZero: true },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 6 * dpi
+                        }
+                    }
+                }
+            }
         },
         plugins: [ChartDataLabels]
     });
 }
+
 function generateReportHTML(data) {
     return `
     <style>
@@ -365,8 +468,8 @@ function generateReportHTML(data) {
         }
 
         .chart-block canvas {
-            max-width: 225px;
-            max-height: 225px;
+            max-width: 230px;
+            max-height: 230px;
             margin: auto;
         }
 
@@ -375,14 +478,13 @@ function generateReportHTML(data) {
            width: 90%;
            margin: 10px auto;
            text-align: center;
-           margin-bottom: 2px;
+           margin-bottom: 0.4rem;
         }
 
         #nrPortfolioChart {
            width: 80%;
-           height: 290px !important;
+           height: 285px !important;
            margin-bottom:4px;
-           top:0;
         }
 
         /* Second Page */
@@ -551,7 +653,7 @@ function generateReportHTML(data) {
   break-after: page;
   height: 0;
 }
-        .no-break {
+     .no-break {
             page-break-inside: avoid;
         }
 
